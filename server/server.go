@@ -108,9 +108,10 @@ func retrieveSend(w http.ResponseWriter, r *http.Request) {
 	if order.Amount != "" {
 		amount, err := strconv.Atoi(order.Amount)
 		if err != nil {
-			return
+			println("Wrong amount format")
+		} else {
+			refundStruct.RefundAmount = amount / 2.0
 		}
-		refundStruct.RefundAmount = amount / 2.0
 	}
 	marshal, err := json.Marshal(refundStruct)
 	if err != nil {
