@@ -32,11 +32,17 @@ func Init() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World !"))
+		_, err := w.Write([]byte("Hello World !"))
+		if err != nil {
+			return
+		}
 	})
 
 	r.Get("/order", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Order here"))
+		_, err := w.Write([]byte("Order here"))
+		if err != nil {
+			return
+		}
 	})
 	r.Post("/order", retrieveSend)
 	err := http.ListenAndServe(":3000", r)
@@ -104,14 +110,14 @@ func retrieveSend(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-
-		marshal, err := json.Marshal(refundStruct)
-		if err != nil {
-			return
-		}
-		_, err = w.Write(marshal)
-		if err != nil {
-			return
-		}
+		refundStruct.RefundAmount = amount / 2.0
+	}
+	marshal, err := json.Marshal(refundStruct)
+	if err != nil {
+		return
+	}
+	_, err = w.Write(marshal)
+	if err != nil {
+		return
 	}
 }
