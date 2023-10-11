@@ -69,6 +69,11 @@ func retrieveSend(w http.ResponseWriter, r *http.Request) {
 		log.Println("Unmarshall failed", err)
 		return
 	}
+	_, err = strconv.Atoi(order.Amount)
+	if err != nil {
+		order.Amount = ""
+		println("Wrong amount format")
+	}
 	if order.RemoteCustomerReference == "" {
 		//http.Error(w, error400.ErrorMessage, error400.ErrorCode)
 		w.WriteHeader(error400.ErrorCode)
