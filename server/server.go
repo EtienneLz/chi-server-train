@@ -124,7 +124,7 @@ func retrieveSend(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	addToDb(order.RemoteCustomerReference)
+	addToDb(order.RemoteCustomerReference, order.PurchaseList)
 
 	marshal, err := json.Marshal(refundStruct)
 	if err != nil {
@@ -136,16 +136,34 @@ func retrieveSend(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func addToDb(customerRef string) {
+func addToDb(customerRef string, purchaseList []string) {
 	currentTime := time.Now()
 	dateFormatted := currentTime.Format("02-01-2006")
 	_, err := data.G_DB.Exec("INSERT INTO user_update (remote_customer_reference, last_update_date) VALUES (?, ?) "+
 		"ON DUPLICATE KEY UPDATE last_update_date = ?", customerRef, dateFormatted, dateFormatted)
 	if err != nil {
 		println(err.Error())
-		return
 	}
 
+	_, err = data.G_DB.Exec("INSERT INTO user_purchase (remote_customer_reference) VALUES (?)", customerRef)
+	if err != nil {
+		println(err.Error())
+	}
+
+	var columnName string
+	for _, str := range purchaseList {
+
+		data.G_DB.QueryRow("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND COLUMN_NAME = ?",
+			"user_purchase", str).Scan(&columnName)
+		if columnName == "" {
+			_, err = data.G_DB.Exec("ALTER TABLE user_purchase ADD COLUMN " + str + " int")
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			// Column exists
+		}
+	}
 }
 
 func DbConnect(name string) *sql.DB {
@@ -160,7 +178,7 @@ func DbConnect(name string) *sql.DB {
 		panic(err.Error())
 	}
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS " + name + ".user_purchase(remote_customer_reference varchar(50), purchase_lists varchar(10000))")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS " + name + ".user_purchase(remote_customer_reference varchar(50), PRIMARY KEY (remote_customer_reference))")
 	if err != nil {
 		panic(err.Error())
 	}
