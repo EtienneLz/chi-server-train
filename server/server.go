@@ -189,23 +189,23 @@ func DbConnect(name string) (*sql.DB, bool) {
 	} else {
 		connected = true
 	}
-	//defer db.Close()
-	//if connected == true {
-	//	_, err = db.Exec("CREATE TABLE IF NOT EXISTS " + name + ".user_update(remote_customer_reference varchar(50), last_update_date varchar(10), PRIMARY KEY (remote_customer_reference))")
-	//	if err != nil {
-	//		panic(err.Error())
-	//	}
-	//
-	//	_, err = db.Exec("CREATE TABLE IF NOT EXISTS " + name + ".user_purchase(remote_customer_reference varchar(50), purchase_lists varchar(50), PRIMARY KEY (remote_customer_reference))")
-	//	if err != nil {
-	//		panic(err.Error())
-	//	}
-	//
-	//	_, err = db.Exec("ALTER TABLE user_purchase ADD UNIQUE (`remote_customer_reference`)")
-	//	if err != nil {
-	//		println(err.Error())
-	//	}
-	//}
+	defer db.Close()
+	if connected == true {
+		_, err = db.Exec("CREATE TABLE IF NOT EXISTS " + name + ".user_update(remote_customer_reference varchar(50), last_update_date varchar(10), PRIMARY KEY (remote_customer_reference))")
+		if err != nil {
+			panic(err.Error())
+		}
+
+		_, err = db.Exec("CREATE TABLE IF NOT EXISTS " + name + ".user_purchase(remote_customer_reference varchar(50), purchase_lists varchar(50), PRIMARY KEY (remote_customer_reference))")
+		if err != nil {
+			panic(err.Error())
+		}
+
+		_, err = db.Exec("ALTER TABLE user_purchase ADD UNIQUE (`remote_customer_reference`)")
+		if err != nil {
+			println(err.Error())
+		}
+	}
 
 	if connected == true {
 		println("Connected to Database")
